@@ -1,0 +1,21 @@
+{
+  "timestamp": 1759760973864,
+  "operation": {
+    "id": "backend:tests:main"
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/backend/server.test.ts",
+      "type": "text",
+      "size": 24488,
+      "dependencies": false
+    },
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/backend/jest.config.ts",
+      "type": "text",
+      "size": 527,
+      "dependencies": false
+    }
+  ]
+}

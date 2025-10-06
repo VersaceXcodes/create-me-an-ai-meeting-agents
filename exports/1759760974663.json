@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759760974663,
+  "operation": {
+    "id": "settings:config:package"
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/backend/package.json",
+      "type": "text",
+      "size": 1496,
+      "dependencies": true
+    }
+  ]
+}

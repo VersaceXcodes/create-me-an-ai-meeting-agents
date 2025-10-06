@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759761717747,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "GV_AuthenticationModal",
+      "version": "latest"
+    }
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/vitereact/src/components/views/GV_AuthenticationModal.tsx",
+      "type": "text",
+      "size": 7057,
+      "dependencies": false
+    }
+  ]
+}

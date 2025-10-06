@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759759791864,
+  "operation": {
+    "id": "backend:specifications:asyncapi"
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/backend/asyncapi.yaml",
+      "type": "text",
+      "size": 18865,
+      "dependencies": false
+    }
+  ]
+}

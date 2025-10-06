@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759762009854,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_Dashboard",
+      "version": "latest"
+    }
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/vitereact/src/components/views/UV_Dashboard.tsx",
+      "type": "text",
+      "size": 23388,
+      "dependencies": false
+    }
+  ]
+}

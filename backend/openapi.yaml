@@ -1,0 +1,2873 @@
+|-
+openapi: 3.0.0
+info:
+  title: MeetMate AI API
+  version: 1.0.0
+  description: Intelligent Meeting Companions for Maximum Productivity
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+
+paths:
+  # ========== AUTHENTICATION ENDPOINTS ==========
+  /auth/register:
+    post:
+      summary: Register a new user
+      operationId: registerUser
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - full_name
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                full_name:
+                  type: string
+                  maxLength: 255
+                password:
+                  type: string
+                  minLength: 8
+                profile_picture_url:
+                  type: string
+                  format: uri
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  auth_token:
+                    type: string
+        '400':
+          description: Invalid input data
+        '409':
+          description: Email already exists
+
+  /auth/login:
+    post:
+      summary: Authenticate user
+      operationId: loginUser
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                remember_me:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  auth_token:
+                    type: string
+        '401':
+          description: Invalid credentials
+
+  /auth/password-reset:
+    post:
+      summary: Request password reset
+      operationId: requestPasswordReset
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Password reset email sent
+        '404':
+          description: User not found
+
+  /auth/password-reset/{token}:
+    post:
+      summary: Reset password with token
+      operationId: resetPassword
+      tags:
+        - Authentication
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - new_password
+              properties:
+                new_password:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Password reset successful
+        '400':
+          description: Invalid token or password
+
+  # ========== USER MANAGEMENT ENDPOINTS ==========
+  /users/me:
+    get:
+      summary: Get current user profile
+      operationId: getCurrentUser
+      tags:
+        - Users
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+
+    put:
+      summary: Update current user profile
+      operationId: updateCurrentUser
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserInput'
+      responses:
+        '200':
+          description: User profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input data
+
+  /users/me/preferences:
+    get:
+      summary: Get user preferences
+      operationId: getUserPreferences
+      tags:
+        - Users
+      responses:
+        '200':
+          description: User preferences retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+
+    put:
+      summary: Update user preferences
+      operationId: updateUserPreferences
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserPreferencesInput'
+      responses:
+        '200':
+          description: User preferences updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPreferences'
+
+  /users/me/password:
+    put:
+      summary: Change user password
+      operationId: changePassword
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - current_password
+                - new_password
+              properties:
+                current_password:
+                  type: string
+                new_password:
+                  type: string
+                  minLength: 8
+      responses:
+        '200':
+          description: Password changed successfully
+        '401':
+          description: Current password is incorrect
+
+  # ========== CALENDAR INTEGRATION ENDPOINTS ==========
+  /integrations/calendar:
+    get:
+      summary: Get calendar integrations
+      operationId: getCalendarIntegrations
+      tags:
+        - Calendar Integrations
+      responses:
+        '200':
+          description: Calendar integrations retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CalendarIntegration'
+
+    post:
+      summary: Create calendar integration
+      operationId: createCalendarIntegration
+      tags:
+        - Calendar Integrations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCalendarIntegrationInput'
+      responses:
+        '201':
+          description: Calendar integration created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarIntegration'
+
+  /integrations/calendar/{id}:
+    put:
+      summary: Update calendar integration
+      operationId: updateCalendarIntegration
+      tags:
+        - Calendar Integrations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCalendarIntegrationInput'
+      responses:
+        '200':
+          description: Calendar integration updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarIntegration'
+
+    delete:
+      summary: Delete calendar integration
+      operationId: deleteCalendarIntegration
+      tags:
+        - Calendar Integrations
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Calendar integration deleted
+
+  # ========== AI AGENT ENDPOINTS ==========
+  /agents:
+    get:
+      summary: Search and list AI agents
+      operationId: searchAiAgents
+      tags:
+        - AI Agents
+      parameters:
+        - name: meeting_type
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [active, inactive, paused]
+        - name: participation_level
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [observer, active_participant, passive_observer]
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [name, last_used_at, created_at]
+            default: created_at
+        - name: sort_order
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: AI agents retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AiAgent'
+                  total_count:
+                    type: integer
+
+    post:
+      summary: Create a new AI agent
+      operationId: createAiAgent
+      tags:
+        - AI Agents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAiAgentInput'
+      responses:
+        '201':
+          description: AI agent created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAgent'
+
+  /agents/{id}:
+    get:
+      summary: Get AI agent by ID
+      operationId: getAiAgent
+      tags:
+        - AI Agents
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: AI agent retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAgent'
+
+    put:
+      summary: Update AI agent
+      operationId: updateAiAgent
+      tags:
+        - AI Agents
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAiAgentInput'
+      responses:
+        '200':
+          description: AI agent updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAgent'
+
+    delete:
+      summary: Delete AI agent
+      operationId: deleteAiAgent
+      tags:
+        - AI Agents
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: AI agent deleted
+
+  /agents/{id}/duplicate:
+    post:
+      summary: Duplicate AI agent
+      operationId: duplicateAiAgent
+      tags:
+        - AI Agents
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: AI agent duplicated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAgent'
+
+  /agents/{id}/archive:
+    post:
+      summary: Archive AI agent
+      operationId: archiveAiAgent
+      tags:
+        - AI Agents
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: AI agent archived
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAgent'
+
+  /agents/{id}/restore:
+    post:
+      summary: Restore archived AI agent
+      operationId: restoreAiAgent
+      tags:
+        - AI Agents
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: AI agent restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiAgent'
+
+  # ========== AGENT TEMPLATE ENDPOINTS ==========
+  /agent-templates:
+    get:
+      summary: Search and list agent templates
+      operationId: searchAgentTemplates
+      tags:
+        - Agent Templates
+      parameters:
+        - name: meeting_type
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: participation_level
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [observer, active_participant, passive_observer]
+        - name: is_public
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [name, created_at]
+            default: created_at
+        - name: sort_order
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Agent templates retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  templates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentTemplate'
+                  total_count:
+                    type: integer
+
+    post:
+      summary: Create agent template
+      operationId: createAgentTemplate
+      tags:
+        - Agent Templates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAgentTemplateInput'
+      responses:
+        '201':
+          description: Agent template created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTemplate'
+
+  /agent-templates/{id}:
+    get:
+      summary: Get agent template by ID
+      operationId: getAgentTemplate
+      tags:
+        - Agent Templates
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent template retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTemplate'
+
+    put:
+      summary: Update agent template
+      operationId: updateAgentTemplate
+      tags:
+        - Agent Templates
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAgentTemplateInput'
+      responses:
+        '200':
+          description: Agent template updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTemplate'
+
+    delete:
+      summary: Delete agent template
+      operationId: deleteAgentTemplate
+      tags:
+        - Agent Templates
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Agent template deleted
+
+  # ========== MEETING ENDPOINTS ==========
+  /meetings:
+    get:
+      summary: Search and list meetings
+      operationId: searchMeetings
+      tags:
+        - Meetings
+      parameters:
+        - name: meeting_type
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [scheduled, in_progress, completed, cancelled, rescheduled]
+        - name: start_date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: end_date
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: agent_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [start_time, created_at, title]
+            default: start_time
+        - name: sort_order
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+      responses:
+        '200':
+          description: Meetings retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meetings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Meeting'
+                  total_count:
+                    type: integer
+
+    post:
+      summary: Create a new meeting
+      operationId: createMeeting
+      tags:
+        - Meetings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMeetingInput'
+      responses:
+        '201':
+          description: Meeting created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meeting'
+
+  /meetings/{id}:
+    get:
+      summary: Get meeting by ID
+      operationId: getMeeting
+      tags:
+        - Meetings
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Meeting retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meeting'
+
+    put:
+      summary: Update meeting
+      operationId: updateMeeting
+      tags:
+        - Meetings
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMeetingInput'
+      responses:
+        '200':
+          description: Meeting updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meeting'
+
+    delete:
+      summary: Delete meeting
+      operationId: deleteMeeting
+      tags:
+        - Meetings
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Meeting deleted
+
+  /meetings/{id}/assign-agent:
+    post:
+      summary: Assign agent to meeting
+      operationId: assignAgentToMeeting
+      tags:
+        - Meetings
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agent_id
+              properties:
+                agent_id:
+                  type: string
+      responses:
+        '200':
+          description: Agent assigned to meeting
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingAgent'
+
+  /meetings/{id}/participants:
+    get:
+      summary: Get meeting participants
+      operationId: getMeetingParticipants
+      tags:
+        - Meetings
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: email
+          in: query
+          required: false
+          schema:
+            type: string
+            format: email
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Meeting participants retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  participants:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MeetingParticipant'
+                  total_count:
+                    type: integer
+
+    post:
+      summary: Add participant to meeting
+      operationId: addMeetingParticipant
+      tags:
+        - Meetings
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMeetingParticipantInput'
+      responses:
+        '201':
+          description: Participant added to meeting
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingParticipant'
+
+  /meetings/{id}/summary:
+    get:
+      summary: Get meeting summary
+      operationId: getMeetingSummary
+      tags:
+        - Meetings
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Meeting summary retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingSummary'
+
+    put:
+      summary: Update meeting summary
+      operationId: updateMeetingSummary
+      tags:
+        - Meetings
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMeetingSummaryInput'
+      responses:
+        '200':
+          description: Meeting summary updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingSummary'
+
+  /meetings/{id}/transcripts:
+    get:
+      summary: Get meeting transcripts
+      operationId: getMeetingTranscripts
+      tags:
+        - Meetings
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: speaker
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: start_time
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: end_time
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [timestamp, created_at]
+            default: timestamp
+        - name: sort_order
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+      responses:
+        '200':
+          description: Meeting transcripts retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transcripts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MeetingTranscript'
+                  total_count:
+                    type: integer
+
+  /meetings/{id}/recording:
+    get:
+      summary: Get meeting recording
+      operationId: getMeetingRecording
+      tags:
+        - Meetings
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Meeting recording retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingRecording'
+
+    put:
+      summary: Update meeting recording
+      operationId: updateMeetingRecording
+      tags:
+        - Meetings
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMeetingRecordingInput'
+      responses:
+        '200':
+          description: Meeting recording updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingRecording'
+
+  # ========== ACTION ITEM ENDPOINTS ==========
+  /action-items:
+    get:
+      summary: Search and list action items
+      operationId: searchActionItems
+      tags:
+        - Action Items
+      parameters:
+        - name: meeting_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: assignee
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [pending, in_progress, completed, cancelled]
+        - name: deadline_before
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: deadline_after
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [deadline, created_at, status]
+            default: deadline
+        - name: sort_order
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+      responses:
+        '200':
+          description: Action items retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action_items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActionItem'
+                  total_count:
+                    type: integer
+
+    post:
+      summary: Create action item
+      operationId: createActionItem
+      tags:
+        - Action Items
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateActionItemInput'
+      responses:
+        '201':
+          description: Action item created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionItem'
+
+  /action-items/{id}:
+    get:
+      summary: Get action item by ID
+      operationId: getActionItem
+      tags:
+        - Action Items
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Action item retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionItem'
+
+    put:
+      summary: Update action item
+      operationId: updateActionItem
+      tags:
+        - Action Items
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateActionItemInput'
+      responses:
+        '200':
+          description: Action item updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionItem'
+
+    delete:
+      summary: Delete action item
+      operationId: deleteActionItem
+      tags:
+        - Action Items
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Action item deleted
+
+  # ========== FOLLOW-UP EMAIL ENDPOINTS ==========
+  /follow-up-emails:
+    get:
+      summary: Search and list follow-up emails
+      operationId: searchFollowUpEmails
+      tags:
+        - Follow-up Emails
+      parameters:
+        - name: meeting_id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [draft, scheduled, sent, failed, cancelled]
+        - name: scheduled_before
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: scheduled_after
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [scheduled_send_time, created_at, sent_at]
+            default: scheduled_send_time
+        - name: sort_order
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+      responses:
+        '200':
+          description: Follow-up emails retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  follow_up_emails:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FollowUpEmail'
+                  total_count:
+                    type: integer
+
+    post:
+      summary: Create follow-up email
+      operationId: createFollowUpEmail
+      tags:
+        - Follow-up Emails
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFollowUpEmailInput'
+      responses:
+        '201':
+          description: Follow-up email created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowUpEmail'
+
+  /follow-up-emails/{id}:
+    get:
+      summary: Get follow-up email by ID
+      operationId: getFollowUpEmail
+      tags:
+        - Follow-up Emails
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Follow-up email retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowUpEmail'
+
+    put:
+      summary: Update follow-up email
+      operationId: updateFollowUpEmail
+      tags:
+        - Follow-up Emails
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFollowUpEmailInput'
+      responses:
+        '200':
+          description: Follow-up email updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowUpEmail'
+
+    delete:
+      summary: Delete follow-up email
+      operationId: deleteFollowUpEmail
+      tags:
+        - Follow-up Emails
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Follow-up email deleted
+
+  /follow-up-emails/{id}/send:
+    post:
+      summary: Send follow-up email
+      operationId: sendFollowUpEmail
+      tags:
+        - Follow-up Emails
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Follow-up email sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FollowUpEmail'
+
+  # ========== ANALYTICS ENDPOINTS ==========
+  /analytics/meetings:
+    get:
+      summary: Get meeting analytics
+      operationId: getMeetingAnalytics
+      tags:
+        - Analytics
+      parameters:
+        - name: period_start
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: period_end
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: date_range
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [period_start, created_at]
+            default: period_start
+        - name: sort_order
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Meeting analytics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  analytics:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MeetingAnalytics'
+                  total_count:
+                    type: integer
+
+  /analytics/dashboard:
+    get:
+      summary: Get dashboard analytics
+      operationId: getDashboardAnalytics
+      tags:
+        - Analytics
+      parameters:
+        - name: date_range
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dashboard analytics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_meetings:
+                    type: integer
+                  total_meeting_time:
+                    type: integer
+                  action_item_completion_rate:
+                    type: number
+                  upcoming_meetings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Meeting'
+                  recent_action_items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActionItem'
+                  agent_usage:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        agent_id:
+                          type: string
+                        agent_name:
+                          type: string
+                        meeting_count:
+                          type: integer
+
+components:
+  schemas:
+    # ========== USER SCHEMAS ==========
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+        password_hash:
+          type: string
+        profile_picture_url:
+          type: string
+          format: uri
+          nullable: true
+        email_verified:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+
+    CreateUserInput:
+      type: object
+      required:
+        - email
+        - full_name
+        - password_hash
+      properties:
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+          maxLength: 255
+        password_hash:
+          type: string
+        profile_picture_url:
+          type: string
+          format: uri
+        email_verified:
+          type: boolean
+        is_active:
+          type: boolean
+
+    UpdateUserInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        full_name:
+          type: string
+          maxLength: 255
+        profile_picture_url:
+          type: string
+          format: uri
+          nullable: true
+        email_verified:
+          type: boolean
+        is_active:
+          type: boolean
+
+    SearchUsersInput:
+      type: object
+      properties:
+        query:
+          type: string
+        is_active:
+          type: boolean
+        limit:
+          type: integer
+          default: 20
+        offset:
+          type: integer
+          default: 0
+        sort_by:
+```yaml
+          type: string
+          enum: [email, full_name, created_at]
+          default: created_at
+        sort_order:
+          type: string
+          enum: [asc, desc]
+          default: desc
+
+    PasswordResetToken:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        token:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+
+    CreatePasswordResetTokenInput:
+      type: object
+      required:
+        - user_id
+        - token
+        - expires_at
+      properties:
+        user_id:
+          type: string
+        token:
+          type: string
+        expires_at:
+          type: string
+          format: date-time
+
+    UserPreferences:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        email_notifications:
+          type: boolean
+        push_notifications:
+          type: boolean
+        follow_up_reminders:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateUserPreferencesInput:
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: string
+        email_notifications:
+          type: boolean
+        push_notifications:
+          type: boolean
+        follow_up_reminders:
+          type: boolean
+
+    UpdateUserPreferencesInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        email_notifications:
+          type: boolean
+        push_notifications:
+          type: boolean
+        follow_up_reminders:
+          type: boolean
+
+    # ========== CALENDAR INTEGRATION SCHEMAS ==========
+    CalendarIntegration:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        provider:
+          type: string
+        provider_user_id:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        access_token:
+          type: string
+          nullable: true
+        refresh_token:
+          type: string
+          nullable: true
+        is_connected:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateCalendarIntegrationInput:
+      type: object
+      required:
+        - user_id
+        - provider
+      properties:
+        user_id:
+          type: string
+        provider:
+          type: string
+        provider_user_id:
+          type: string
+        email:
+          type: string
+          format: email
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        is_connected:
+          type: boolean
+
+    UpdateCalendarIntegrationInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+        provider_user_id:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        access_token:
+          type: string
+          nullable: true
+        refresh_token:
+          type: string
+          nullable: true
+        is_connected:
+          type: boolean
+
+    SearchCalendarIntegrationsInput:
+      type: object
+      properties:
+        user_id:
+          type: string
+        provider:
+          type: string
+        is_connected:
+          type: boolean
+
+    # ========== AI AGENT SCHEMAS ==========
+    AiAgent:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        name:
+          type: string
+        meeting_type:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, paused]
+        participation_level:
+          type: string
+          enum: [observer, active_participant, passive_observer]
+        primary_objectives:
+          type: string
+        voice_settings:
+          type: string
+          nullable: true
+        custom_instructions:
+          type: string
+          nullable: true
+        speaking_triggers:
+          type: string
+          nullable: true
+        note_taking_focus:
+          type: string
+          nullable: true
+        follow_up_templates:
+          type: string
+          nullable: true
+        last_used_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateAiAgentInput:
+      type: object
+      required:
+        - user_id
+        - name
+        - meeting_type
+        - primary_objectives
+      properties:
+        user_id:
+          type: string
+        name:
+          type: string
+          maxLength: 255
+        meeting_type:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, paused]
+        participation_level:
+          type: string
+          enum: [observer, active_participant, passive_observer]
+        primary_objectives:
+          type: string
+        voice_settings:
+          type: string
+        custom_instructions:
+          type: string
+        speaking_triggers:
+          type: string
+        note_taking_focus:
+          type: string
+        follow_up_templates:
+          type: string
+
+    UpdateAiAgentInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          maxLength: 255
+        meeting_type:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, paused]
+        participation_level:
+          type: string
+          enum: [observer, active_participant, passive_observer]
+        primary_objectives:
+          type: string
+        voice_settings:
+          type: string
+          nullable: true
+        custom_instructions:
+          type: string
+          nullable: true
+        speaking_triggers:
+          type: string
+          nullable: true
+        note_taking_focus:
+          type: string
+          nullable: true
+        follow_up_templates:
+          type: string
+          nullable: true
+
+    SearchAiAgentsInput:
+      type: object
+      properties:
+        user_id:
+          type: string
+        meeting_type:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, paused]
+        participation_level:
+          type: string
+          enum: [observer, active_participant, passive_observer]
+        limit:
+          type: integer
+          default: 20
+        offset:
+          type: integer
+          default: 0
+        sort_by:
+          type: string
+          enum: [name, last_used_at, created_at]
+          default: created_at
+        sort_order:
+          type: string
+          enum: [asc, desc]
+          default: desc
+
+    # ========== AGENT TEMPLATE SCHEMAS ==========
+    AgentTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        name:
+          type: string
+        meeting_type:
+          type: string
+        participation_level:
+          type: string
+          enum: [observer, active_participant, passive_observer]
+        primary_objectives:
+          type: string
+        voice_settings:
+          type: string
+          nullable: true
+        custom_instructions:
+          type: string
+          nullable: true
+        is_public:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateAgentTemplateInput:
+      type: object
+      required:
+        - user_id
+        - name
+        - meeting_type
+        - participation_level
+        - primary_objectives
+      properties:
+        user_id:
+          type: string
+        name:
+          type: string
+          maxLength: 255
+        meeting_type:
+          type: string
+        participation_level:
+          type: string
+          enum: [observer, active_participant, passive_observer]
+        primary_objectives:
+          type: string
+        voice_settings:
+          type: string
+        custom_instructions:
+          type: string
+        is_public:
+          type: boolean
+
+    UpdateAgentTemplateInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          maxLength: 255
+        meeting_type:
+          type: string
+        participation_level:
+          type: string
+          enum: [observer, active_participant, passive_observer]
+        primary_objectives:
+          type: string
+        voice_settings:
+          type: string
+          nullable: true
+        custom_instructions:
+          type: string
+          nullable: true
+        is_public:
+          type: boolean
+
+    SearchAgentTemplatesInput:
+      type: object
+      properties:
+        user_id:
+          type: string
+        meeting_type:
+          type: string
+        participation_level:
+          type: string
+          enum: [observer, active_participant, passive_observer]
+        is_public:
+          type: boolean
+        limit:
+          type: integer
+          default: 20
+        offset:
+          type: integer
+          default: 0
+        sort_by:
+          type: string
+          enum: [name, created_at]
+          default: created_at
+        sort_order:
+          type: string
+          enum: [asc, desc]
+          default: desc
+
+    # ========== MEETING SCHEMAS ==========
+    Meeting:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        calendar_event_id:
+          type: string
+          nullable: true
+        meeting_type:
+          type: string
+        agenda:
+          type: string
+          nullable: true
+        desired_outcomes:
+          type: string
+          nullable: true
+        special_instructions:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [scheduled, in_progress, completed, cancelled, rescheduled]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateMeetingInput:
+      type: object
+      required:
+        - user_id
+        - title
+        - start_time
+        - end_time
+        - meeting_type
+      properties:
+        user_id:
+          type: string
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        calendar_event_id:
+          type: string
+        meeting_type:
+          type: string
+        agenda:
+          type: string
+        desired_outcomes:
+          type: string
+        special_instructions:
+          type: string
+        status:
+          type: string
+          enum: [scheduled, in_progress, completed, cancelled, rescheduled]
+
+    UpdateMeetingInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        calendar_event_id:
+          type: string
+          nullable: true
+        meeting_type:
+          type: string
+        agenda:
+          type: string
+          nullable: true
+        desired_outcomes:
+          type: string
+          nullable: true
+        special_instructions:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [scheduled, in_progress, completed, cancelled, rescheduled]
+
+    SearchMeetingsInput:
+      type: object
+      properties:
+        user_id:
+          type: string
+        meeting_type:
+          type: string
+        status:
+          type: string
+          enum: [scheduled, in_progress, completed, cancelled, rescheduled]
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        limit:
+          type: integer
+          default: 20
+        offset:
+          type: integer
+          default: 0
+        sort_by:
+          type: string
+          enum: [start_time, created_at, title]
+          default: start_time
+        sort_order:
+          type: string
+          enum: [asc, desc]
+          default: asc
+
+    # ========== MEETING AGENT SCHEMAS ==========
+    MeetingAgent:
+      type: object
+      properties:
+        id:
+          type: string
+        meeting_id:
+          type: string
+        agent_id:
+          type: string
+        join_status:
+          type: string
+          enum: [pending, joined, declined, left]
+        joined_at:
+          type: string
+          format: date-time
+          nullable: true
+        left_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    CreateMeetingAgentInput:
+      type: object
+      required:
+        - meeting_id
+        - agent_id
+      properties:
+        meeting_id:
+          type: string
+        agent_id:
+          type: string
+        join_status:
+          type: string
+          enum: [pending, joined, declined, left]
+
+    UpdateMeetingAgentInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        join_status:
+          type: string
+          enum: [pending, joined, declined, left]
+        joined_at:
+          type: string
+          format: date-time
+        left_at:
+          type: string
+          format: date-time
+
+    # ========== MEETING PARTICIPANT SCHEMAS ==========
+    MeetingParticipant:
+      type: object
+      properties:
+        id:
+          type: string
+        meeting_id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+          nullable: true
+        role:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    CreateMeetingParticipantInput:
+      type: object
+      required:
+        - meeting_id
+        - name
+      properties:
+        meeting_id:
+          type: string
+        name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+
+    UpdateMeetingParticipantInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          nullable: true
+        role:
+          type: string
+          nullable: true
+
+    SearchMeetingParticipantsInput:
+      type: object
+      properties:
+        meeting_id:
+          type: string
+        email:
+          type: string
+          format: email
+        limit:
+          type: integer
+          default: 50
+        offset:
+          type: integer
+          default: 0
+
+    # ========== MEETING SUMMARY SCHEMAS ==========
+    MeetingSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        meeting_id:
+          type: string
+        key_discussion_points:
+          type: string
+        decisions_made:
+          type: string
+          nullable: true
+        sentiment_analysis:
+          type: string
+          nullable: true
+        participant_engagement:
+          type: string
+          nullable: true
+        generated_summary:
+          type: string
+        edited_summary:
+          type: string
+          nullable: true
+        generated_at:
+          type: string
+          format: date-time
+        edited_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_finalized:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateMeetingSummaryInput:
+      type: object
+      required:
+        - meeting_id
+        - key_discussion_points
+        - generated_summary
+      properties:
+        meeting_id:
+          type: string
+        key_discussion_points:
+          type: string
+        decisions_made:
+          type: string
+        sentiment_analysis:
+          type: string
+        participant_engagement:
+          type: string
+        generated_summary:
+          type: string
+        is_finalized:
+          type: boolean
+
+    UpdateMeetingSummaryInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        key_discussion_points:
+          type: string
+        decisions_made:
+          type: string
+          nullable: true
+        sentiment_analysis:
+          type: string
+          nullable: true
+        participant_engagement:
+          type: string
+          nullable: true
+        generated_summary:
+          type: string
+        edited_summary:
+          type: string
+          nullable: true
+        is_finalized:
+          type: boolean
+
+    # ========== ACTION ITEM SCHEMAS ==========
+    ActionItem:
+      type: object
+      properties:
+        id:
+          type: string
+        meeting_id:
+          type: string
+        description:
+          type: string
+        assignee:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [pending, in_progress, completed, cancelled]
+        comments:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateActionItemInput:
+      type: object
+      required:
+        - meeting_id
+        - description
+        - assignee
+        - deadline
+      properties:
+        meeting_id:
+          type: string
+        description:
+          type: string
+        assignee:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [pending, in_progress, completed, cancelled]
+        comments:
+          type: string
+
+    UpdateActionItemInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        description:
+          type: string
+        assignee:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [pending, in_progress, completed, cancelled]
+        comments:
+          type: string
+          nullable: true
+
+    SearchActionItemsInput:
+      type: object
+      properties:
+        meeting_id:
+          type: string
+        assignee:
+          type: string
+        status:
+          type: string
+          enum: [pending, in_progress, completed, cancelled]
+        deadline_before:
+          type: string
+          format: date-time
+        deadline_after:
+          type: string
+          format: date-time
+        limit:
+          type: integer
+          default: 20
+        offset:
+          type: integer
+          default: 0
+        sort_by:
+          type: string
+          enum: [deadline, created_at, status]
+          default: deadline
+        sort_order:
+          type: string
+          enum: [asc, desc]
+          default: asc
+
+    # ========== MEETING TRANSCRIPT SCHEMAS ==========
+    MeetingTranscript:
+      type: object
+      properties:
+        id:
+          type: string
+        meeting_id:
+          type: string
+        speaker:
+          type: string
+          nullable: true
+        content:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+
+    CreateMeetingTranscriptInput:
+      type: object
+      required:
+        - meeting_id
+        - content
+        - timestamp
+      properties:
+        meeting_id:
+          type: string
+        speaker:
+          type: string
+        content:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    SearchMeetingTranscriptsInput:
+      type: object
+      properties:
+        meeting_id:
+          type: string
+        speaker:
+          type: string
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        limit:
+          type: integer
+          default: 100
+        offset:
+          type: integer
+          default: 0
+        sort_by:
+          type: string
+          enum: [timestamp, created_at]
+          default: timestamp
+        sort_order:
+          type: string
+          enum: [asc, desc]
+          default: asc
+
+    # ========== MEETING RECORDING SCHEMAS ==========
+    MeetingRecording:
+      type: object
+      properties:
+        id:
+          type: string
+        meeting_id:
+          type: string
+        recording_url:
+          type: string
+          format: uri
+          nullable: true
+        storage_duration:
+          type: integer
+        file_size:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    CreateMeetingRecordingInput:
+      type: object
+      required:
+        - meeting_id
+      properties:
+        meeting_id:
+          type: string
+        recording_url:
+          type: string
+          format: uri
+        storage_duration:
+          type: integer
+        file_size:
+          type: integer
+
+    UpdateMeetingRecordingInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        recording_url:
+          type: string
+          format: uri
+          nullable: true
+        storage_duration:
+          type: integer
+        file_size:
+          type: integer
+          nullable: true
+
+    # ========== FOLLOW-UP EMAIL SCHEMAS ==========
+    FollowUpEmail:
+      type: object
+      properties:
+        id:
+          type: string
+        meeting_id:
+          type: string
+        template_id:
+          type: string
+          nullable: true
+        recipients:
+          type: string
+        subject:
+          type: string
+          maxLength: 500
+        body:
+          type: string
+        scheduled_send_time:
+          type: string
+          format: date-time
+          nullable: true
+        sent_at:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          enum: [draft, scheduled, sent, failed, cancelled]
+        attachments:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateFollowUpEmailInput:
+      type: object
+      required:
+        - meeting_id
+        - recipients
+        - subject
+        - body
+      properties:
+        meeting_id:
+          type: string
+        template_id:
+          type: string
+        recipients:
+          type: string
+        subject:
+          type: string
+          maxLength: 500
+        body:
+          type: string
+        scheduled_send_time:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [draft, scheduled, sent, failed, cancelled]
+        attachments:
+          type: string
+
+    UpdateFollowUpEmailInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        template_id:
+          type: string
+          nullable: true
+        recipients:
+          type: string
+        subject:
+          type: string
+          maxLength: 500
+        body:
+          type: string
+        scheduled_send_time:
+          type: string
+          format: date-time
+          nullable: true
+        sent_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [draft, scheduled, sent, failed, cancelled]
+        attachments:
+          type: string
+          nullable: true
+
+    SearchFollowUpEmailsInput:
+      type: object
+      properties:
+        meeting_id:
+          type: string
+        status:
+          type: string
+          enum: [draft, scheduled, sent, failed, cancelled]
+        scheduled_before:
+          type: string
+          format: date-time
+        scheduled_after:
+          type: string
+          format: date-time
+        limit:
+          type: integer
+          default: 20
+        offset:
+          type: integer
+          default: 0
+        sort_by:
+          type: string
+          enum: [scheduled_send_time, created_at, sent_at]
+          default: scheduled_send_time
+        sort_order:
+          type: string
+          enum: [asc, desc]
+          default: asc
+
+    # ========== MEETING ANALYTICS SCHEMAS ==========
+    MeetingAnalytics:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        total_meeting_time:
+          type: integer
+        participation_distribution:
+          type: string
+          nullable: true
+        action_item_completion_rate:
+          type: number
+          nullable: true
+        meeting_sentiment_trends:
+          type: string
+          nullable: true
+        period_start:
+          type: string
+          format: date-time
+        period_end:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateMeetingAnalyticsInput:
+      type: object
+      required:
+        - user_id
+        - period_start
+        - period_end
+      properties:
+        user_id:
+          type: string
+        total_meeting_time:
+          type: integer
+        participation_distribution:
+          type: string
+        action_item_completion_rate:
+          type: number
+        meeting_sentiment_trends:
+          type: string
+        period_start:
+          type: string
+          format: date-time
+        period_end:
+          type: string
+          format: date-time
+
+    UpdateMeetingAnalyticsInput:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        total_meeting_time:
+          type: integer
+        participation_distribution:
+          type: string
+          nullable: true
+        action_item_completion_rate:
+          type: number
+          nullable: true
+        meeting_sentiment_trends:
+          type: string
+          nullable: true
+        period_start:
+          type: string
+          format: date-time
+        period_end:
+          type: string
+          format: date-time
+
+    SearchMeetingAnalyticsInput:
+      type: object
+      properties:
+        user_id:
+          type: string
+        period_start:
+          type: string
+          format: date-time
+        period_end:
+          type: string
+          format: date-time
+        limit:
+          type: integer
+          default: 20
+        offset:
+          type: integer
+          default: 0
+        sort_by:
+          type: string
+          enum: [period_start, created_at]
+          default: period_start
+        sort_order:
+          type: string
+          enum: [asc, desc]
+          default: desc
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

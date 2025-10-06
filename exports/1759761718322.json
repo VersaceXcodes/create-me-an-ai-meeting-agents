@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759761718322,
+  "operation": {
+    "id": "settings:config:package"
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/vitereact/package.json",
+      "type": "text",
+      "size": 3032,
+      "dependencies": true
+    }
+  ]
+}

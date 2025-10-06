@@ -1,0 +1,723 @@
+asyncapi: 2.0.0
+info:
+  title: MeetMate AI Realtime Events API
+  version: 1.0.0
+  description: Real-time events for AI Meeting Agents application
+servers:
+  development:
+    url: http://localhost:3000
+    protocol: ws
+    description: Development WebSocket server
+channels:
+  user.{user_id}:
+    parameters:
+      user_id:
+        description: Unique user identifier
+        schema:
+          type: string
+    subscribe:
+      summary: Subscribe to user-specific events
+      message:
+        oneOf:
+          - $ref: "#/components/messages/UserSessionUpdated"
+          - $ref: "#/components/messages/UserPreferencesUpdated"
+          - $ref: "#/components/messages/CalendarIntegrationUpdated"
+  meeting.{meeting_id}:
+    parameters:
+      meeting_id:
+        description: Unique meeting identifier
+        schema:
+          type: string
+    subscribe:
+      summary: Subscribe to meeting-specific events
+      message:
+        oneOf:
+          - $ref: "#/components/messages/MeetingStatusChanged"
+          - $ref: "#/components/messages/AgentJoinStatusChanged"
+          - $ref: "#/components/messages/LiveTranscriptUpdate"
+          - $ref: "#/components/messages/ActionItemDetected"
+          - $ref: "#/components/messages/MeetingSummaryGenerated"
+          - $ref: "#/components/messages/MeetingRecordingReady"
+  agent.{agent_id}:
+    parameters:
+      agent_id:
+        description: Unique agent identifier
+        schema:
+          type: string
+    subscribe:
+      summary: Subscribe to agent-specific events
+      message:
+        oneOf:
+          - $ref: "#/components/messages/AgentStatusChanged"
+          - $ref: "#/components/messages/AgentConfigurationUpdated"
+  global:
+    subscribe:
+      summary: Subscribe to global application events
+      message:
+        oneOf:
+          - $ref: "#/components/messages/SystemNotification"
+  action_items:
+    subscribe:
+      summary: Subscribe to action item updates
+      message:
+        oneOf:
+          - $ref: "#/components/messages/ActionItemCreated"
+          - $ref: "#/components/messages/ActionItemUpdated"
+          - $ref: "#/components/messages/ActionItemStatusChanged"
+components:
+  messages:
+    UserSessionUpdated:
+      name: UserSessionUpdated
+      title: User Session Updated
+      summary: Emitted when user authentication state changes
+      payload:
+        $ref: "#/components/schemas/UserSessionUpdatedPayload"
+    UserPreferencesUpdated:
+      name: UserPreferencesUpdated
+      title: User Preferences Updated
+      summary: Emitted when user preferences are modified
+      payload:
+        $ref: "#/components/schemas/UserPreferencesUpdatedPayload"
+    CalendarIntegrationUpdated:
+      name: CalendarIntegrationUpdated
+      title: Calendar Integration Updated
+      summary: Emitted when calendar integration status changes
+      payload:
+        $ref: "#/components/schemas/CalendarIntegrationUpdatedPayload"
+    MeetingStatusChanged:
+      name: MeetingStatusChanged
+      title: Meeting Status Changed
+      summary: Emitted when meeting status is updated
+      payload:
+        $ref: "#/components/schemas/MeetingStatusChangedPayload"
+    AgentJoinStatusChanged:
+      name: AgentJoinStatusChanged
+      title: Agent Join Status Changed
+      summary: Emitted when an agent's join status changes for a meeting
+      payload:
+        $ref: "#/components/schemas/AgentJoinStatusChangedPayload"
+    LiveTranscriptUpdate:
+      name: LiveTranscriptUpdate
+      title: Live Transcript Update
+      summary: Real-time transcription updates during active meetings
+      payload:
+        $ref: "#/components/schemas/LiveTranscriptUpdatePayload"
+    ActionItemDetected:
+      name: ActionItemDetected
+      title: Action Item Detected
+      summary: Emitted when an action item is detected during a meeting
+      payload:
+        $ref: "#/components/schemas/ActionItemDetectedPayload"
+    MeetingSummaryGenerated:
+      name: MeetingSummaryGenerated
+      title: Meeting Summary Generated
+      summary: Emitted when a meeting summary is generated
+      payload:
+        $ref: "#/components/schemas/MeetingSummaryGeneratedPayload"
+    MeetingRecordingReady:
+      name: MeetingRecordingReady
+      title: Meeting Recording Ready
+      summary: Emitted when meeting recording processing is complete
+      payload:
+        $ref: "#/components/schemas/MeetingRecordingReadyPayload"
+    AgentStatusChanged:
+      name: AgentStatusChanged
+      title: Agent Status Changed
+      summary: Emitted when agent status is updated
+      payload:
+        $ref: "#/components/schemas/AgentStatusChangedPayload"
+    AgentConfigurationUpdated:
+      name: AgentConfigurationUpdated
+      title: Agent Configuration Updated
+      summary: Emitted when agent configuration is modified
+      payload:
+        $ref: "#/components/schemas/AgentConfigurationUpdatedPayload"
+    SystemNotification:
+      name: SystemNotification
+      title: System Notification
+      summary: Global system notifications and alerts
+      payload:
+        $ref: "#/components/schemas/SystemNotificationPayload"
+    ActionItemCreated:
+      name: ActionItemCreated
+      title: Action Item Created
+      summary: Emitted when a new action item is created
+      payload:
+        $ref: "#/components/schemas/ActionItemCreatedPayload"
+    ActionItemUpdated:
+      name: ActionItemUpdated
+      title: Action Item Updated
+      summary: Emitted when an action item is updated
+      payload:
+        $ref: "#/components/schemas/ActionItemUpdatedPayload"
+    ActionItemStatusChanged:
+      name: ActionItemStatusChanged
+      title: Action Item Status Changed
+      summary: Emitted when action item status changes
+      payload:
+        $ref: "#/components/schemas/ActionItemStatusChangedPayload"
+  schemas:
+    UserSessionUpdatedPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - user_session_updated
+        user:
+          $ref: "#/components/schemas/User"
+        auth_token:
+          type: string
+          nullable: true
+        authentication_status:
+          type: object
+          properties:
+            is_authenticated:
+              type: boolean
+            is_loading:
+              type: boolean
+        error_message:
+          type: string
+          nullable: true
+    UserPreferencesUpdatedPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - user_preferences_updated
+        user_id:
+          type: string
+        preferences:
+          $ref: "#/components/schemas/UserPreferences"
+    CalendarIntegrationUpdatedPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - calendar_integration_updated
+        user_id:
+          type: string
+        integration:
+          $ref: "#/components/schemas/CalendarIntegration"
+    MeetingStatusChangedPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - meeting_status_changed
+        meeting_id:
+          type: string
+        previous_status:
+          type: string
+          enum:
+            - scheduled
+            - in_progress
+            - completed
+            - cancelled
+            - rescheduled
+        new_status:
+          type: string
+          enum:
+            - scheduled
+            - in_progress
+            - completed
+            - cancelled
+            - rescheduled
+        meeting:
+          $ref: "#/components/schemas/Meeting"
+    AgentJoinStatusChangedPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - agent_join_status_changed
+        meeting_id:
+          type: string
+        agent_id:
+          type: string
+        previous_status:
+          type: string
+          enum:
+            - pending
+            - joined
+            - declined
+            - left
+        new_status:
+          type: string
+          enum:
+            - pending
+            - joined
+            - declined
+            - left
+        meeting_agent:
+          $ref: "#/components/schemas/MeetingAgent"
+    LiveTranscriptUpdatePayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - live_transcript_update
+        meeting_id:
+          type: string
+        transcript_chunk:
+          $ref: "#/components/schemas/MeetingTranscript"
+        current_speaker:
+          type: string
+          nullable: true
+        speaking_time_distribution:
+          type: object
+          additionalProperties:
+            type: number
+    ActionItemDetectedPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - action_item_detected
+        meeting_id:
+          type: string
+        action_item:
+          $ref: "#/components/schemas/ActionItem"
+        confidence_score:
+          type: number
+          minimum: 0
+          maximum: 1
+    MeetingSummaryGeneratedPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - meeting_summary_generated
+        meeting_id:
+          type: string
+        summary:
+          $ref: "#/components/schemas/MeetingSummary"
+        processing_time:
+          type: number
+    MeetingRecordingReadyPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - meeting_recording_ready
+        meeting_id:
+          type: string
+        recording:
+          $ref: "#/components/schemas/MeetingRecording"
+        download_url:
+          type: string
+    AgentStatusChangedPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - agent_status_changed
+        agent_id:
+          type: string
+        previous_status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - paused
+        new_status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - paused
+        agent:
+          $ref: "#/components/schemas/AiAgent"
+    AgentConfigurationUpdatedPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - agent_configuration_updated
+        agent_id:
+          type: string
+        updated_fields:
+          type: array
+          items:
+            type: string
+        agent:
+          $ref: "#/components/schemas/AiAgent"
+    SystemNotificationPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - system_notification
+        notification_type:
+          type: string
+          enum:
+            - info
+            - warning
+            - error
+            - success
+        title:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        action_url:
+          type: string
+          nullable: true
+    ActionItemCreatedPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - action_item_created
+        action_item:
+          $ref: "#/components/schemas/ActionItem"
+        meeting_id:
+          type: string
+    ActionItemUpdatedPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - action_item_updated
+        action_item:
+          $ref: "#/components/schemas/ActionItem"
+        meeting_id:
+          type: string
+        updated_fields:
+          type: array
+          items:
+            type: string
+    ActionItemStatusChangedPayload:
+      type: object
+      properties:
+        event_type:
+          type: string
+          enum:
+            - action_item_status_changed
+        action_item_id:
+          type: string
+        previous_status:
+          type: string
+          enum:
+            - pending
+            - in_progress
+            - completed
+            - cancelled
+        new_status:
+          type: string
+          enum:
+            - pending
+            - in_progress
+            - completed
+            - cancelled
+        action_item:
+          $ref: "#/components/schemas/ActionItem"
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        full_name:
+          type: string
+        profile_picture_url:
+          type: string
+          nullable: true
+        email_verified:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        is_active:
+          type: boolean
+    UserPreferences:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        email_notifications:
+          type: boolean
+        push_notifications:
+          type: boolean
+        follow_up_reminders:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    CalendarIntegration:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        provider:
+          type: string
+        provider_user_id:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        access_token:
+          type: string
+          nullable: true
+        refresh_token:
+          type: string
+          nullable: true
+        is_connected:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Meeting:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        calendar_event_id:
+          type: string
+          nullable: true
+        meeting_type:
+          type: string
+        agenda:
+          type: string
+          nullable: true
+        desired_outcomes:
+          type: string
+          nullable: true
+        special_instructions:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum:
+            - scheduled
+            - in_progress
+            - completed
+            - cancelled
+            - rescheduled
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    MeetingAgent:
+      type: object
+      properties:
+        id:
+          type: string
+        meeting_id:
+          type: string
+        agent_id:
+          type: string
+        join_status:
+          type: string
+          enum:
+            - pending
+            - joined
+            - declined
+            - left
+        joined_at:
+          type: string
+          format: date-time
+          nullable: true
+        left_at:
+          type: string
+          format: date-time
+          nullable: true
+    MeetingTranscript:
+      type: object
+      properties:
+        id:
+          type: string
+        meeting_id:
+          type: string
+        speaker:
+          type: string
+          nullable: true
+        content:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    ActionItem:
+      type: object
+      properties:
+        id:
+          type: string
+        meeting_id:
+          type: string
+        description:
+          type: string
+        assignee:
+          type: string
+        deadline:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum:
+            - pending
+            - in_progress
+            - completed
+            - cancelled
+        comments:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    MeetingSummary:
+      type: object
+      properties:
+        id:
+          type: string
+        meeting_id:
+          type: string
+        key_discussion_points:
+          type: string
+        decisions_made:
+          type: string
+          nullable: true
+        sentiment_analysis:
+          type: string
+          nullable: true
+        participant_engagement:
+          type: string
+          nullable: true
+        generated_summary:
+          type: string
+        edited_summary:
+          type: string
+          nullable: true
+        generated_at:
+          type: string
+          format: date-time
+        edited_at:
+          type: string
+          format: date-time
+          nullable: true
+        is_finalized:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    MeetingRecording:
+      type: object
+      properties:
+        id:
+          type: string
+        meeting_id:
+          type: string
+        recording_url:
+          type: string
+          nullable: true
+        storage_duration:
+          type: integer
+        file_size:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+    AiAgent:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        name:
+          type: string
+        meeting_type:
+          type: string
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+            - paused
+        participation_level:
+          type: string
+          enum:
+            - observer
+            - active_participant
+            - passive_observer
+        primary_objectives:
+          type: string
+        voice_settings:
+          type: string
+          nullable: true
+        custom_instructions:
+          type: string
+          nullable: true
+        speaking_triggers:
+          type: string
+          nullable: true
+        note_taking_focus:
+          type: string
+          nullable: true
+        follow_up_templates:
+          type: string
+          nullable: true
+        last_used_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time

@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759762796858,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_CalendarIntegration",
+      "version": "latest"
+    }
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/vitereact/src/components/views/UV_CalendarIntegration.tsx",
+      "type": "text",
+      "size": 25970,
+      "dependencies": false
+    }
+  ]
+}

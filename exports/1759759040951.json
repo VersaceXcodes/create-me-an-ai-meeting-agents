@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759759040951,
+  "operation": {
+    "id": "db:postgres"
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/backend/db.sql",
+      "type": "text",
+      "size": 20412,
+      "dependencies": false
+    }
+  ]
+}

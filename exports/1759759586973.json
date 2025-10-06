@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759759586973,
+  "operation": {
+    "id": "db:schemas:zod"
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/backend/schema.ts",
+      "type": "text",
+      "size": 24093,
+      "dependencies": false
+    }
+  ]
+}

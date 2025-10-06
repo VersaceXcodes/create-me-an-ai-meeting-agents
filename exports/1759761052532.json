@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759761052532,
+  "operation": {
+    "id": "webapp:react:store",
+    "refs": {
+      "id": "redux",
+      "version": "latest"
+    }
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/vitereact/src/store/main.tsx",
+      "type": "text",
+      "size": 18930,
+      "dependencies": false
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759762013865,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "GV_TopNavigation",
+      "version": "latest"
+    }
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/vitereact/src/components/views/GV_TopNavigation.tsx",
+      "type": "text",
+      "size": 12649,
+      "dependencies": false
+    }
+  ]
+}

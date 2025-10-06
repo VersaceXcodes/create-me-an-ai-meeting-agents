@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759761503858,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "GV_BottomFooter",
+      "version": "latest"
+    }
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/vitereact/src/components/views/GV_BottomFooter.tsx",
+      "type": "text",
+      "size": 4833,
+      "dependencies": false
+    }
+  ]
+}

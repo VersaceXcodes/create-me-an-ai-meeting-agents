@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759761600847,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "GV_SidebarNavigation",
+      "version": "1759761322679"
+    }
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/vitereact/src/components/views/GV_SidebarNavigation.tsx",
+      "type": "text",
+      "size": 10628,
+      "dependencies": false
+    }
+  ]
+}

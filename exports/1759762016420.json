@@ -1,0 +1,19 @@
+{
+  "timestamp": 1759762016420,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_PostMeetingReview",
+      "version": "1759761322608"
+    }
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/vitereact/src/components/views/UV_PostMeetingReview.tsx",
+      "type": "text",
+      "size": 20436,
+      "dependencies": false
+    }
+  ]
+}

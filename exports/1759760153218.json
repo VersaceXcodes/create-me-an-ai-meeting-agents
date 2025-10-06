@@ -1,0 +1,15 @@
+{
+  "timestamp": 1759760153218,
+  "operation": {
+    "id": "backend:specifications:openapi"
+  },
+  "projectId": "create-me-an-ai-meeting-agents",
+  "files": [
+    {
+      "path": "../../apps/create-me-an-ai-meeting-agents/backend/openapi.yaml",
+      "type": "text",
+      "size": 68677,
+      "dependencies": false
+    }
+  ]
+}
